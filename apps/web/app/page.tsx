@@ -26,6 +26,7 @@ const Page = () => {
   return (
     <div className={classes["chat-screen"]}>
       <div className={classes["message-area"]}>
+        <h1>Chat App</h1>
         {messages.map((message, index) => (
           <div key={index} className={classes["message"]}>
             {message}
