@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import classes from "./page.module.css";
 import { useSocket } from "./contexts/SocketProvider";
 
