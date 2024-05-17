@@ -5,16 +5,16 @@
     "scripts": {
         "start": "node dist/index",
         "dev": "tsc-watch --onSuccess \"npm run start\" ",
-        "build": "tsc -p ."
+        "build": "tsc -p .",
+        "prisma:init:postgress": "npx prisma init --datasource-provider postgresql",
+        "prisma:init:migration": "npx prisma migrate dev --name init",
+        "prisma:studio" : "npx prisma studio"
     },
     "devDependencies": {
         "@types/express": "^4.17.21",
         "prisma": "^5.14.0",
         "tsc-watch": "^6.2.0",
-        "typescript": "^5.4.5",
-        "prisma:init:postgress": "npx prisma init --datasource-provider postgresql",
-        "prisma:init:migration": "npx prisma migrate dev --name init",
-        "prisma:studio" : "npx prisma studio"
+        "typescript": "^5.4.5"
     },
     "dependencies": {
         "@prisma/client": "5.14.0",
