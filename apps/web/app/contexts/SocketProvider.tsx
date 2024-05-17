@@ -34,7 +34,7 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const _socket = io("http://localhost:8000");
+    const _socket = io("https://scalable-chat-app-b0b7.onrender.com");
     _socket.on("message", onMessageReceived);
     setSocket(_socket);
 
