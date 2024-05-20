@@ -72,6 +72,7 @@ class SocketService {
             JSON.stringify({ message, user: username })
           );
         } catch (e) {
+          console.log(e);
           throw new Error("Db Error");
         }
       });
@@ -82,6 +83,7 @@ class SocketService {
         try {
           await prismaClient.user.delete({ where: { socketId: socket.id } });
         } catch (e) {
+          console.log(e);
           throw new Error("Db error");
         }
       });
