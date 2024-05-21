@@ -11,7 +11,6 @@ interface IMessages {
 interface Errors {
   name?: string;
   roomId?: string;
-  email?: string;
 }
 
 const Page = () => {
@@ -20,7 +19,6 @@ const Page = () => {
   const [chatScreen, setChatScreen] = useState(false);
 
   const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
 
   const [roomId, setRoomId] = useState<string>("");
   const [errors, setErrors] = useState<Errors>({});
@@ -31,7 +29,7 @@ const Page = () => {
 
   const handleSendMessage = () => {
     if (inputValue.trim() !== "") {
-      sendMessage(inputValue, email);
+      sendMessage(inputValue);
       setInputValue("");
     }
   };
@@ -40,7 +38,6 @@ const Page = () => {
     const newErrors: Errors = {};
     if (!name) newErrors.name = "Name is required";
     if (!roomId) newErrors.roomId = "Room ID is required";
-    if (!email) newErrors.email = "Email is required";
     return newErrors;
   };
 
@@ -51,7 +48,7 @@ const Page = () => {
       // Handle successful form submission here
       console.log("Form submitted:", { name, roomId });
       setChatScreen((prev) => !prev);
-      registerUser(name, email);
+      registerUser(name);
     } else {
       setErrors(validationErrors);
     }
@@ -75,16 +72,6 @@ const Page = () => {
               className={classes.input}
             />
             {errors.name && <p className={classes.error}>{errors.name}</p>}
-          </div>
-          <div className={classes.inputGroup}>
-            <label className={classes.label}>Email</label>
-            <input
-              type="text"
-              value={email}
-              onChange={handleChange(setEmail)}
-              className={classes.input}
-            />
-            {errors.roomId && <p className={classes.error}>{errors.roomId}</p>}
           </div>
           <div className={classes.inputGroup}>
             <label className={classes.label}>Room ID</label>

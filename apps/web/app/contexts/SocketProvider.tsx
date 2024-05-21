@@ -13,9 +13,9 @@ interface IMessageBody {
   user: string;
 }
 interface ISocketContext {
-  sendMessage: (msg: string, email: string) => any;
+  sendMessage: (msg: string) => any;
   messages: IMessageBody[];
-  registerUser: (user: string, email: string) => any;
+  registerUser: (user: string) => any;
 }
 
 const SocketContext = React.createContext<ISocketContext | null>(null);
@@ -25,19 +25,19 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<IMessageBody[]>([]);
 
   const sendMessage: ISocketContext["sendMessage"] = useCallback(
-    (msg, email) => {
+    (msg) => {
       console.log("Send Message", msg);
       if (socket) {
-        socket.emit("event:message", { message: msg, email });
+        socket.emit("event:message", { message: msg });
       }
     },
     [socket]
   );
 
   const registerUser: ISocketContext["registerUser"] = useCallback(
-    (user, email) => {
+    (user) => {
       if (Socket) {
-        socket?.emit("event:username", { username: user, email: email });
+        socket?.emit("event:username", { username: user });
       }
     },
     [socket]

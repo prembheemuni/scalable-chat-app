@@ -46,13 +46,12 @@ class SocketService {
 
       socket.on(
         "event:username",
-        async ({ username, email }: { username: string; email: string }) => {
+        async ({ username }: { username: string }) => {
           //  this.users[socket.id] = username;
           try {
             await prismaClient.user.create({
               data: {
                 username,
-                email,
                 socketId: socket.id,
               },
             });
@@ -62,33 +61,30 @@ class SocketService {
         }
       );
 
-      socket.on(
-        "event:message",
-        async ({ message, email }: { message: string; email: string }) => {
-          if (!email || !message) return;
-          try {
-            console.log("new message received", message);
-            const { username } = await prismaClient.user.findUnique({
-              where: { email: email },
-            });
-            await pub.publish(
-              "MESSAGES",
-              JSON.stringify({ message, user: username })
-            );
-          } catch (e) {
-            console.log(e);
-          }
+      socket.on("event:message", async ({ message }: { message: string }) => {
+        if (!message) return;
+        try {
+          console.log("new message received", message);
+          const { username } = await prismaClient.user.findUnique({
+            where: { socketId: socket.id },
+          });
+          await pub.publish(
+            "MESSAGES",
+            JSON.stringify({ message, user: username })
+          );
+        } catch (e) {
+          console.log(e);
         }
-      );
+      });
 
       socket.on("disconnect", async () => {
-        console.log(`Bye Bye!! ${this.users[socket.id]}`);
         if (!socket.id) return;
         try {
-          const { id } = await prismaClient.user.findUnique({
+          const { id, username } = await prismaClient.user.findUnique({
             where: { socketId: socket.id },
           });
           if (id) await prismaClient.user.delete({ where: { id: id } });
+          console.log(`Bye Bye!! ${username}`);
         } catch (e) {
           console.log(e);
         }
