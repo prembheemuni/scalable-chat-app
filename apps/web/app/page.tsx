@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, FormEvent, ChangeEvent } from "react";
+import React, {
+  useState,
+  FormEvent,
+  ChangeEvent,
+  useRef,
+  useEffect,
+} from "react";
 import classes from "./page.module.css";
 import { useSocket } from "./contexts/SocketProvider";
 
@@ -22,6 +28,8 @@ const Page = () => {
 
   const [roomId, setRoomId] = useState<string>("");
   const [errors, setErrors] = useState<Errors>({});
+
+  const itemRef = useRef<any>(null);
 
   const handleInputChange = (event: any) => {
     setInputValue(event.target.value);
@@ -45,14 +53,18 @@ const Page = () => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length === 0) {
-      // Handle successful form submission here
-      console.log("Form submitted:", { name, roomId });
       setChatScreen((prev) => !prev);
       registerUser(name);
     } else {
       setErrors(validationErrors);
     }
   };
+
+  useEffect(() => {
+    if (itemRef.current) {
+      itemRef.current.scrollTop = itemRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
@@ -93,8 +105,8 @@ const Page = () => {
 
   return (
     <div className={classes["chat-screen"]}>
-      <div className={classes["message-area"]}>
-        <h1>Chat App</h1>
+      <div className={classes["message-area"]} ref={itemRef}>
+        <h1 className={classes.heading}>Chat Space</h1>
         {messages.map((msg, index) => (
           <div key={index} className={classes.message}>
             <div className={classes.messageHeader}>{msg.user}</div>

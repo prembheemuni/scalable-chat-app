@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { io, Socket } from "socket.io-client";
+import toast from "react-hot-toast";
 
 interface SocketProviderProps {
   children?: React.ReactNode;
@@ -52,17 +52,30 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     setMessages((prev) => [...prev, { message, user }]);
   }, []);
 
+  const onEntry = useCallback((user: string) => {
+    toast.success(`${user} added`);
+  }, []);
+
+  const onExit = useCallback((user: string) => {
+    toast.success(`${user} left`);
+  }, []);
+
   useEffect(() => {
     const _socket = io("https://scalable-chat-app-ehu7.onrender.com");
     //const _socket = io("http://localhost:8000");
 
     _socket.on("message", onMessageReceived);
+    _socket.on("notify:entry", onEntry);
+    _socket.on("notify:exit", onExit);
     setSocket(_socket);
-    // toast("Socket connected");
+    toast.success("Socket connected");
 
     return () => {
       _socket.disconnect();
       _socket.off("message", onMessageReceived);
+      _socket.off("notify:entry", onEntry);
+      _socket.off("notify:exit", onExit);
+
       setSocket(undefined);
     };
   }, []);

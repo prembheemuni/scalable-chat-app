@@ -55,6 +55,7 @@ class SocketService {
                 socketId: socket.id,
               },
             });
+            socket.broadcast.emit("notify:entry", username);
           } catch (e) {
             console.log(e);
           }
@@ -85,6 +86,7 @@ class SocketService {
           });
           if (id) await prismaClient.user.delete({ where: { id: id } });
           console.log(`Bye Bye!! ${username}`);
+          socket.broadcast.emit("notify:exit", username);
         } catch (e) {
           console.log(e);
         }
