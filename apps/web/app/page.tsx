@@ -11,6 +11,7 @@ interface IMessages {
 interface Errors {
   name?: string;
   roomId?: string;
+  email?: string;
 }
 
 const Page = () => {
@@ -18,25 +19,28 @@ const Page = () => {
   const [inputValue, setInputValue] = useState("");
   const [chatScreen, setChatScreen] = useState(false);
 
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+
+  const [roomId, setRoomId] = useState<string>("");
+  const [errors, setErrors] = useState<Errors>({});
+
   const handleInputChange = (event: any) => {
     setInputValue(event.target.value);
   };
 
   const handleSendMessage = () => {
     if (inputValue.trim() !== "") {
-      sendMessage(inputValue);
+      sendMessage(inputValue, email);
       setInputValue("");
     }
   };
-
-  const [name, setName] = useState<string>("");
-  const [roomId, setRoomId] = useState<string>("");
-  const [errors, setErrors] = useState<Errors>({});
 
   const validate = (): Errors => {
     const newErrors: Errors = {};
     if (!name) newErrors.name = "Name is required";
     if (!roomId) newErrors.roomId = "Room ID is required";
+    if (!email) newErrors.email = "Email is required";
     return newErrors;
   };
 
@@ -47,7 +51,7 @@ const Page = () => {
       // Handle successful form submission here
       console.log("Form submitted:", { name, roomId });
       setChatScreen((prev) => !prev);
-      registerUser(name);
+      registerUser(name, email);
     } else {
       setErrors(validationErrors);
     }
@@ -71,6 +75,16 @@ const Page = () => {
               className={classes.input}
             />
             {errors.name && <p className={classes.error}>{errors.name}</p>}
+          </div>
+          <div className={classes.inputGroup}>
+            <label className={classes.label}>Email</label>
+            <input
+              type="text"
+              value={email}
+              onChange={handleChange(setEmail)}
+              className={classes.input}
+            />
+            {errors.roomId && <p className={classes.error}>{errors.roomId}</p>}
           </div>
           <div className={classes.inputGroup}>
             <label className={classes.label}>Room ID</label>

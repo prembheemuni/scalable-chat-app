@@ -46,45 +46,51 @@ class SocketService {
 
       socket.on(
         "event:username",
-        async ({ username }: { username: string }) => {
+        async ({ username, email }: { username: string; email: string }) => {
           //  this.users[socket.id] = username;
           try {
             await prismaClient.user.create({
               data: {
                 username,
+                email,
                 socketId: socket.id,
               },
             });
           } catch (e) {
-            throw new Error("Database Error");
+            console.log(e);
           }
         }
       );
 
-      socket.on("event:message", async ({ message }: { message: string }) => {
-        try {
-          console.log("new message received", message);
-          const { username } = await prismaClient.user.findUnique({
-            where: { socketId: socket.id },
-          });
-          await pub.publish(
-            "MESSAGES",
-            JSON.stringify({ message, user: username })
-          );
-        } catch (e) {
-          console.log(e);
-          throw new Error("Db Error");
+      socket.on(
+        "event:message",
+        async ({ message, email }: { message: string; email: string }) => {
+          if (!email || !message) return;
+          try {
+            console.log("new message received", message);
+            const { username } = await prismaClient.user.findUnique({
+              where: { email: email },
+            });
+            await pub.publish(
+              "MESSAGES",
+              JSON.stringify({ message, user: username })
+            );
+          } catch (e) {
+            console.log(e);
+          }
         }
-      });
+      );
 
       socket.on("disconnect", async () => {
         console.log(`Bye Bye!! ${this.users[socket.id]}`);
-        delete this.users[socket.id];
+        if (!socket.id) return;
         try {
-          await prismaClient.user.delete({ where: { socketId: socket.id } });
+          const { id } = await prismaClient.user.findUnique({
+            where: { socketId: socket.id },
+          });
+          if (id) await prismaClient.user.delete({ where: { id: id } });
         } catch (e) {
           console.log(e);
-          throw new Error("Db error");
         }
       });
     });
