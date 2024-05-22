@@ -20,7 +20,8 @@ interface Errors {
 }
 
 const Page = () => {
-  const { sendMessage, messages, registerUser } = useSocket();
+  const { sendMessage, messages, registerUser, joinRoom, leaveRoom } =
+    useSocket();
   const [inputValue, setInputValue] = useState("");
   const [chatScreen, setChatScreen] = useState(false);
 
@@ -37,7 +38,7 @@ const Page = () => {
 
   const handleSendMessage = () => {
     if (inputValue.trim() !== "") {
-      sendMessage(inputValue);
+      sendMessage(inputValue, roomId);
       setInputValue("");
     }
   };
@@ -54,7 +55,8 @@ const Page = () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length === 0) {
       setChatScreen((prev) => !prev);
-      registerUser(name);
+      registerUser(name, roomId);
+      joinRoom(roomId);
     } else {
       setErrors(validationErrors);
     }
@@ -65,6 +67,12 @@ const Page = () => {
       itemRef.current.scrollTop = itemRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      leaveRoom(roomId);
+    };
+  }, []);
 
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>

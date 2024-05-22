@@ -44,49 +44,65 @@ class SocketService {
     io.on("connect", (socket) => {
       console.log(`New connection received ${socket.id}`);
 
+      socket.emit("notify", "Welcome to the chat");
+
       socket.on(
         "event:username",
-        async ({ username }: { username: string }) => {
+        async ({ username, room }: { username: string; room: string }) => {
           //  this.users[socket.id] = username;
           try {
             await prismaClient.user.create({
               data: {
                 username,
                 socketId: socket.id,
+                room: room,
               },
             });
-            socket.broadcast.emit("notify:entry", username);
+            socket.broadcast.to(room).emit("notify:entry", username);
           } catch (e) {
             console.log(e);
           }
         }
       );
 
-      socket.on("event:message", async ({ message }: { message: string }) => {
-        if (!message) return;
-        try {
-          console.log("new message received", message);
-          const { username } = await prismaClient.user.findUnique({
-            where: { socketId: socket.id },
-          });
-          await pub.publish(
-            "MESSAGES",
-            JSON.stringify({ message, user: username })
-          );
-        } catch (e) {
-          console.log(e);
-        }
+      socket.on("event:join_room", ({ room }: { room: string }) => {
+        socket.join(room);
+        console.log(`room joined ${room}`);
       });
+      socket.on("event:exit_room", ({ room }: { room: string }) => {
+        console.log("im calling...");
+        socket.leave(room);
+      });
+
+      socket.on(
+        "event:message",
+        async ({ message, room }: { message: string; room: string }) => {
+          if (!message) return;
+          console.log(room, "as rrr");
+          try {
+            console.log("new message received", message);
+            const { username } = await prismaClient.user.findUnique({
+              where: { socketId: socket.id },
+            });
+            await pub.publish(
+              "MESSAGES",
+              JSON.stringify({ message, user: username, room: room })
+            );
+          } catch (e) {
+            console.log(e);
+          }
+        }
+      );
 
       socket.on("disconnect", async () => {
         if (!socket.id) return;
         try {
-          const { id, username } = await prismaClient.user.findUnique({
+          const { id, username, room } = await prismaClient.user.findUnique({
             where: { socketId: socket.id },
           });
           if (id) await prismaClient.user.delete({ where: { id: id } });
-          console.log(`Bye Bye!! ${username}`);
-          socket.broadcast.emit("notify:exit", username);
+          console.log(`Bye Bye!! ${username} ${room}`);
+          socket.broadcast.to(room).emit("notify:exit", username);
         } catch (e) {
           console.log(e);
         }
@@ -95,7 +111,10 @@ class SocketService {
 
     sub.on("message", (channel, message) => {
       if (channel === "MESSAGES") {
-        io.emit("message", message);
+        const { room } = JSON.parse(message) as { room: string };
+        console.log(message, "as dimple");
+
+        io.to(room).emit("message", message);
       }
     });
   }

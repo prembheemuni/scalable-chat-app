@@ -13,9 +13,11 @@ interface IMessageBody {
   user: string;
 }
 interface ISocketContext {
-  sendMessage: (msg: string) => any;
+  sendMessage: (msg: string, room: string) => any;
   messages: IMessageBody[];
-  registerUser: (user: string) => any;
+  registerUser: (user: string, room: string) => any;
+  joinRoom: (room: string) => any;
+  leaveRoom: (room: string) => any;
 }
 
 const SocketContext = React.createContext<ISocketContext | null>(null);
@@ -25,19 +27,37 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<IMessageBody[]>([]);
 
   const sendMessage: ISocketContext["sendMessage"] = useCallback(
-    (msg) => {
+    (msg, room) => {
       console.log("Send Message", msg);
       if (socket) {
-        socket.emit("event:message", { message: msg });
+        socket.emit("event:message", { message: msg, room });
       }
     },
     [socket]
   );
 
   const registerUser: ISocketContext["registerUser"] = useCallback(
-    (user) => {
-      if (Socket) {
-        socket?.emit("event:username", { username: user });
+    (user, room) => {
+      if (socket) {
+        socket?.emit("event:username", { username: user, room });
+      }
+    },
+    [socket]
+  );
+
+  const joinRoom: ISocketContext["joinRoom"] = useCallback(
+    (room) => {
+      if (socket) {
+        socket.emit("event:join_room", { room });
+      }
+    },
+    [socket]
+  );
+
+  const leaveRoom: ISocketContext["leaveRoom"] = useCallback(
+    (room) => {
+      if (socket) {
+        socket.emit("event:exit_room", { room });
       }
     },
     [socket]
@@ -53,12 +73,16 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []);
 
   const onEntry = useCallback((user: string) => {
-    toast.success(`${user} added`);
+    toast.success(`${user} joined`, { duration: 5000 });
   }, []);
 
   const onExit = useCallback((user: string) => {
-    toast.success(`${user} left`);
+    toast.success(`${user} left`, { duration: 5000 });
   }, []);
+
+  const onNotification = (msg: string) => {
+    toast.success(`${msg}`, { duration: 5000 });
+  };
 
   useEffect(() => {
     const _socket = io("https://scalable-chat-app-ehu7.onrender.com");
@@ -67,21 +91,24 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     _socket.on("message", onMessageReceived);
     _socket.on("notify:entry", onEntry);
     _socket.on("notify:exit", onExit);
+    _socket.on("notify", onNotification);
     setSocket(_socket);
-    toast.success("Socket connected");
 
     return () => {
       _socket.disconnect();
       _socket.off("message", onMessageReceived);
       _socket.off("notify:entry", onEntry);
       _socket.off("notify:exit", onExit);
+      _socket.off("notify", onNotification);
 
       setSocket(undefined);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ sendMessage, messages, registerUser }}>
+    <SocketContext.Provider
+      value={{ sendMessage, messages, registerUser, joinRoom, leaveRoom }}
+    >
       {children}
     </SocketContext.Provider>
   );
