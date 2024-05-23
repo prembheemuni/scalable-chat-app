@@ -70,7 +70,6 @@ class SocketService {
         console.log(`room joined ${room}`);
       });
       socket.on("event:exit_room", ({ room }: { room: string }) => {
-        console.log("im calling...");
         socket.leave(room);
       });
 
@@ -86,7 +85,6 @@ class SocketService {
         "event:message",
         async ({ message, room }: { message: string; room: string }) => {
           if (!message) return;
-          console.log(room, "as rrr");
           try {
             console.log("new message received", message);
             const { username } = await prismaClient.user.findUnique({
@@ -120,8 +118,6 @@ class SocketService {
     sub.on("message", (channel, message) => {
       if (channel === "MESSAGES") {
         const { room } = JSON.parse(message) as { room: string };
-        console.log(message, "as dimple");
-
         io.to(room).emit("message", message);
       }
     });

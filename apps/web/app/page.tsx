@@ -141,7 +141,7 @@ const Page = () => {
   return (
     <div className={classes["chat-screen"]}>
       <div className={classes["message-area"]} ref={itemRef}>
-        <h1 className={classes.heading}>Chat Space</h1>
+        <h1 className={classes.heading}>Chat Space - {roomId}</h1>
         {messages.map((msg, index) => (
           <div key={index} className={classes.message}>
             <div className={classes.messageHeader}>{msg.user}</div>
@@ -149,9 +149,11 @@ const Page = () => {
           </div>
         ))}
       </div>
-      {isTyping && (
-        <div className={classes["typing-indicator"]}>{typingMessage}</div>
-      )}
+      <div className={classes["typing-container"]}>
+        {isTyping && (
+          <div className={classes["typing-indicator"]}>{typingMessage}</div>
+        )}
+      </div>
       <div className={classes["input-area"]}>
         <input type="text" placeholder="Type a message..." ref={inputEleRef} />
         <button onClick={handleSendMessage}>Send</button>
