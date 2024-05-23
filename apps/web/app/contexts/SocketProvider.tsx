@@ -19,6 +19,8 @@ interface ISocketContext {
   joinRoom: (room: string) => any;
   leaveRoom: (room: string) => any;
   startTyping: (user: string, room: string) => any;
+  isTyping: boolean;
+  typingMessage: string;
 }
 
 const SocketContext = React.createContext<ISocketContext | null>(null);
@@ -28,6 +30,7 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<IMessageBody[]>([]);
   const [typingMessage, setTypingMessage] = useState<string>("");
 
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const sendMessage: ISocketContext["sendMessage"] = useCallback(
     (msg, room) => {
       console.log("Send Message", msg);
@@ -83,13 +86,26 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []);
 
   const onNotification = (msg: string) => {
-    toast.dismiss();
-    toast.success(`${msg}`, { duration: 5000 });
+    if (msg === "Welcome to the chat") {
+      toast(msg);
+    }
+    setIsTyping(true);
+    setTypingMessage(msg);
   };
 
   const startTyping: ISocketContext["startTyping"] = (user, room) => {
     socket?.emit("start_typing", { user, room });
   };
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      isTyping && setIsTyping(false);
+    }, 1000);
+
+    return () => {
+      clearInterval(id);
+    };
+  }, [isTyping]);
 
   useEffect(() => {
     const _socket = io("https://scalable-chat-app-ehu7.onrender.com");
@@ -121,6 +137,8 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         joinRoom,
         leaveRoom,
         startTyping,
+        isTyping,
+        typingMessage,
       }}
     >
       {children}

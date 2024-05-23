@@ -27,6 +27,8 @@ const Page = () => {
     joinRoom,
     leaveRoom,
     startTyping,
+    isTyping,
+    typingMessage,
   } = useSocket();
   const [chatScreen, setChatScreen] = useState(false);
 
@@ -147,6 +149,9 @@ const Page = () => {
           </div>
         ))}
       </div>
+      {isTyping && (
+        <div className={classes["typing-indicator"]}>{typingMessage}</div>
+      )}
       <div className={classes["input-area"]}>
         <input type="text" placeholder="Type a message..." ref={inputEleRef} />
         <button onClick={handleSendMessage}>Send</button>

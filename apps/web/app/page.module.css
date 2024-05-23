@@ -95,6 +95,13 @@
   width: 100%;
 }
 
+.typing-indicator {
+  margin-bottom: 10px;
+  color: gray;
+  font-style: italic;
+  padding-left: 0.75rem;
+}
+
 .label {
   display: block;
   margin-bottom: 0.5rem;
