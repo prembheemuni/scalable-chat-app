@@ -20,9 +20,14 @@ interface Errors {
 }
 
 const Page = () => {
-  const { sendMessage, messages, registerUser, joinRoom, leaveRoom } =
-    useSocket();
-  const [inputValue, setInputValue] = useState("");
+  const {
+    sendMessage,
+    messages,
+    registerUser,
+    joinRoom,
+    leaveRoom,
+    startTyping,
+  } = useSocket();
   const [chatScreen, setChatScreen] = useState(false);
 
   const [name, setName] = useState<string>("");
@@ -32,14 +37,13 @@ const Page = () => {
 
   const itemRef = useRef<any>(null);
 
-  const handleInputChange = (event: any) => {
-    setInputValue(event.target.value);
-  };
+  const inputEleRef = useRef<HTMLInputElement | null>(null);
 
   const handleSendMessage = () => {
-    if (inputValue.trim() !== "") {
-      sendMessage(inputValue, roomId);
-      setInputValue("");
+    const value = inputEleRef.current?.value as string;
+    if (value !== "") {
+      sendMessage(value, roomId);
+      if (inputEleRef.current) inputEleRef.current.value = "";
     }
   };
 
@@ -73,6 +77,27 @@ const Page = () => {
       leaveRoom(roomId);
     };
   }, []);
+
+  useEffect(() => {
+    const eventFunc = (event: KeyboardEvent) => {
+      if (event.key === "Enter") {
+        handleSendMessage();
+      }
+    };
+
+    const inputTracking = () => {
+      startTyping(name, roomId);
+    };
+
+    const inputEle = inputEleRef.current;
+    if (inputEle) inputEle.addEventListener("keypress", eventFunc);
+    if (inputEle) inputEle.addEventListener("input", inputTracking);
+
+    return () => {
+      if (inputEle) inputEle.removeEventListener("keypress", eventFunc);
+      if (inputEle) inputEle.removeEventListener("input", inputTracking);
+    };
+  }, [chatScreen]);
 
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
@@ -123,12 +148,7 @@ const Page = () => {
         ))}
       </div>
       <div className={classes["input-area"]}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Type a message..."
-        />
+        <input type="text" placeholder="Type a message..." ref={inputEleRef} />
         <button onClick={handleSendMessage}>Send</button>
       </div>
     </div>

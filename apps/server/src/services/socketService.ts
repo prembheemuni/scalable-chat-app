@@ -75,6 +75,14 @@ class SocketService {
       });
 
       socket.on(
+        "start_typing",
+        ({ user, room }: { user: string; room: string }) => {
+          if (user && room)
+            socket.broadcast.to(room).emit("notify", `${user} is Typing`);
+        }
+      );
+
+      socket.on(
         "event:message",
         async ({ message, room }: { message: string; room: string }) => {
           if (!message) return;

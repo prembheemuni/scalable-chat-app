@@ -18,6 +18,7 @@ interface ISocketContext {
   registerUser: (user: string, room: string) => any;
   joinRoom: (room: string) => any;
   leaveRoom: (room: string) => any;
+  startTyping: (user: string, room: string) => any;
 }
 
 const SocketContext = React.createContext<ISocketContext | null>(null);
@@ -25,6 +26,7 @@ const SocketContext = React.createContext<ISocketContext | null>(null);
 const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket>();
   const [messages, setMessages] = useState<IMessageBody[]>([]);
+  const [typingMessage, setTypingMessage] = useState<string>("");
 
   const sendMessage: ISocketContext["sendMessage"] = useCallback(
     (msg, room) => {
@@ -81,7 +83,12 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []);
 
   const onNotification = (msg: string) => {
+    toast.dismiss();
     toast.success(`${msg}`, { duration: 5000 });
+  };
+
+  const startTyping: ISocketContext["startTyping"] = (user, room) => {
+    socket?.emit("start_typing", { user, room });
   };
 
   useEffect(() => {
@@ -107,7 +114,14 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   return (
     <SocketContext.Provider
-      value={{ sendMessage, messages, registerUser, joinRoom, leaveRoom }}
+      value={{
+        sendMessage,
+        messages,
+        registerUser,
+        joinRoom,
+        leaveRoom,
+        startTyping,
+      }}
     >
       {children}
     </SocketContext.Provider>
